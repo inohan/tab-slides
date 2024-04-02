@@ -1,0 +1,7 @@
+Rk,team,categories,R1,R2,R3,Pts,ATSS,SSD,open_break,rookie_break
+1,Team 1,Open,1st,1st,1st,9,160,1.63,1,
+2,Team 2,Open,1st,1st,2nd,8,159,1.41,2,
+3,Team 3,"Open, Rookie",1st,1st,2nd,8,157,0.82,-1,1
+4,Team 4,Open,2nd,1st,1st,8,155,3.74,-2,
+5,Team 5,"Open, Rookie",2nd,1st,2nd,7,157,2.94,,2
+6,Team 6,Open,2nd,1st,3rd,6,159,2.36,,

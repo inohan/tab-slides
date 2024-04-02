@@ -1,0 +1,19 @@
+Rk,name,category,team,R1,R2,R3,Avg,Stdev,prize
+1,Speaker 1-1,Open,Team 1,79,82,81,80.67,1.25,1
+2,Speaker 1-2,Open,Team 1,81,79,79,79.67,0.94,2
+3=,Speaker 1-3,Open,Team 1,79,78,81,79.33,1.25,3
+3=,Speaker 2-1,Open,Team 2,79,80,79,79.33,0.47,3
+3=,Speaker 2-2,Open,Team 2,80,80,78,79.33,0.94,3
+3=,Speaker 2-3,Open,Team 2,80,79,79,79.33,0.47,3
+7,Speaker 3-1,Open,Team 3,78,79,80,79,0.82,7
+8=,Speaker 3-2,Open,Team 3,75,79,80,78,2.16,8
+8=,Speaker 3-3,Open,Team 3,79,75,80,78,2.16,8
+8=,Speaker 4-1,Open,Team 4,76,77,81,78,2.16,8
+8=,Speaker 4-2,Open,Team 4,79,79,76,78,1.41,8
+12=,Speaker 4-3,Open,Team 4,75,78,80,77.67,2.05,
+12=,Speaker 5-1,Open,Team 5,78,75,80,77.67,2.05,
+12=,Speaker 5-2,Open,Team 5,77,78,78,77.67,0.47,
+15=,Speaker 5-3,Open,Team 5,75,78,79,77.33,1.7,
+15=,Speaker 6-1,Open,Team 6,77,77,78,77.33,0.47,
+17=,Speaker 6-2,Open,Team 6,78,78,75,77,1.41,
+17=,Speaker 6-3,Open,Team 6,76,77,78,77,0.82,

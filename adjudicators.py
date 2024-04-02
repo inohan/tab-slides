@@ -5,7 +5,7 @@ from pathlib import Path
 import inquirer
 from tkinter import filedialog
 from collections import defaultdict
-from exception import MissingColumnError, LogoError
+from exception import MissingColumnError, LogoError, enc
 import logging
 
 class AdjudicatorSlidesBuilder():
@@ -124,7 +124,7 @@ class AdjudicatorSlidesBuilder():
         self.danger_prevention = inquirer.list_input("Select danger prevention settings", default=self.danger_prevention, choices = choices)
 
     def load_logos(self, path):
-        df_logo = pd.read_csv(path)
+        df_logo = pd.read_csv(path, encoding = enc)
         # Check for missing columns
         missing_columns = [item for item in ["institution", "path"] if item not in df_logo.columns]
         if len(missing_columns) != 0:
@@ -134,14 +134,14 @@ class AdjudicatorSlidesBuilder():
             self.dict_logos[row["institution"]] = str(Path(row["path"])) if Path(row["path"]).exists() else None
 
     def load_participants(self, path):
-        self.df_participants = pd.read_csv(path, encoding="shift-jis")
+        self.df_participants = pd.read_csv(path, encoding = enc)
         # Check for missing columns
         missing_columns = [item for item in ["name", "institution"] if item not in self.df_participants.columns]
         if len(missing_columns) != 0:
             raise MissingColumnError(f"Missing column(s) for {path}: {', '.join(missing_columns)}")
 
     def load_standings(self, path):
-        df_load = pd.read_csv(path)
+        df_load = pd.read_csv(path, encoding = enc)
         print(df_load.columns)
         missing_columns = [item for item in ["name", "score"] if item not in df_load]
         if len(missing_columns) != 0:

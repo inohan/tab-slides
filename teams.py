@@ -9,7 +9,7 @@ from tkinter import filedialog
 from collections import defaultdict
 import copy
 from enum import Enum
-from exception import MissingColumnError, LogoError
+from exception import MissingColumnError, LogoError, enc
 
 #課題 Danger Prevention Slide設定
 class TeamSlidesBuilder():
@@ -141,7 +141,7 @@ class TeamSlidesBuilder():
         self.danger_prevention = inquirer.list_input("Select danger prevention settings", default=self.danger_prevention, choices = choices)
 
     def load_logos(self, path):
-        df_logo = pd.read_csv(path)
+        df_logo = pd.read_csv(path, encoding=enc)
         # Check for missing columns
         missing_columns = [item for item in ["institution", "path"] if item not in df_logo.columns]
         if len(missing_columns) != 0:
@@ -151,7 +151,7 @@ class TeamSlidesBuilder():
             self.dict_logos[row["institution"]] = str(Path(row["path"])) if Path(row["path"]).exists() else None
 
     def load_participants(self, path):
-        self.df_participants = pd.read_csv(path, encoding="shift-jis")
+        self.df_participants = pd.read_csv(path, encoding=enc)
         # Check for missing columns
         missing_columns = [item for item in ["team", "institution"] if item not in self.df_participants.columns]
         if len(missing_columns) != 0:
@@ -160,7 +160,7 @@ class TeamSlidesBuilder():
     def load_standings(self, path):
         self.metrics_show = []
         self.metrics_hide = []
-        df_load = pd.read_csv(path)
+        df_load = pd.read_csv(path, encoding=enc)
         if "team" not in df_load.columns:
             raise MissingColumnError("Missing Column 'team'")
         columns_metric = [TeamMetric(e) for e in TeamMetric.values() if e in df_load.columns]
