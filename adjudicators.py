@@ -149,7 +149,7 @@ class AdjudicatorSlidesBuilder():
         # Selecting ranks
         col_rank = inquirer.list_input("Which column holds the rank?", choices = [c for c in df_load.columns if c not in ["name", "score"]])
         # Selecting show metrics
-        df_filter = df_load[["name", "score", col_rank]].rename(columns={col_rank: "rank"}).dropna(subset=["rank"]).sort_values(by=["rank", "name"], ascending=[True, True])
+        df_filter = df_load[["name", "score", col_rank]].rename(columns={col_rank: "rank"}).dropna(subset=["rank"]).sort_values(by=["rank", "name"], ascending=[False, True])
         self.df_standings = df_filter
 
     def load_presentation(self, path):

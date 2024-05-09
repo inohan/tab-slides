@@ -182,7 +182,7 @@ class SpeakerSlidesBuilder():
             else:
                 break
         columns_extract = ["name", col_rank, *[m.value for m in self.metrics_show], *[m.value for m in self.metrics_hide]]
-        df_filter = df_load[columns_extract].rename(columns={col_rank: "rank"}).dropna(subset=["rank"])
+        df_filter = df_load[columns_extract].rename(columns={col_rank: "rank"}).dropna(subset=["rank"]).sort_values(by=["rank", "name"], ascending=[False, True])
         # Remove unnecessary metrics
         for index, row in df_filter.iterrows():
             is_nan = False
