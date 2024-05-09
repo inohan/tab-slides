@@ -20,17 +20,20 @@ def add_result_slide(pres: Presentation, layout_index: int, title: str, metrics:
     slide_layout = pres.slide_layouts[layout_index]
     slide = pres.slides.add_slide(slide_layout)
     for shape_layout in slide_layout.placeholders:
-        shape_slide = slide.placeholders[shape_layout.placeholder_format.idx]
-        if shape_layout.placeholder_format.type == PP_PLACEHOLDER.PICTURE:
-            if (len(logos) > pictindex):
-                pic = shape_slide.insert_picture(logos[pictindex])
-                pict_fit(pic)
-                pictindex += 1
-                
-        else:
-            shape_slide.text_frame.auto_size = MSO_AUTO_SIZE.TEXT_TO_FIT_SHAPE
-            shape_slide.text_frame.text = shape_layout.text.format(title = title, metrics = metrics, name = name)
-            #shape_slide.text_frame.fit_text()
+        try:
+            shape_slide = slide.placeholders[shape_layout.placeholder_format.idx]
+            if shape_layout.placeholder_format.type == PP_PLACEHOLDER.PICTURE:
+                if (len(logos) > pictindex):
+                    pic = shape_slide.insert_picture(logos[pictindex])
+                    pict_fit(pic)
+                    pictindex += 1
+                    
+            else:
+                shape_slide.text_frame.auto_size = MSO_AUTO_SIZE.TEXT_TO_FIT_SHAPE
+                shape_slide.text_frame.text = shape_layout.text.format(title = title, metrics = metrics, name = name)
+                #shape_slide.text_frame.fit_text()
+        except Exception:
+            continue
 
 def pict_fit(picture):
     crop_v = picture.crop_top + picture.crop_bottom

@@ -10,6 +10,7 @@ from collections import defaultdict
 import copy
 from enum import Enum
 from exception import MissingColumnError, LogoError, enc
+import logging
 
 #課題 Danger Prevention Slide設定
 class TeamSlidesBuilder():
@@ -106,6 +107,7 @@ class TeamSlidesBuilder():
                 self.load_standings(file_path)
                 self.paths["standing"] = file_path
             except Exception as e:
+                logging.exception("Error at prompt standing")
                 print(e)
         else:
             print("Error: file does not exist.")
@@ -192,11 +194,11 @@ class TeamSlidesBuilder():
                     df_filter.loc[index, self.metrics_hide[i]] = np.nan
                 else:
                     metrics_check = [*self.metrics_show, *self.metrics_hide[:i]]
-                    condition = functools.reduce(lambda x, y: x & y, [df_filter[metric] == row[metric] for metric in metrics_check])
+                    condition = functools.reduce(lambda x, y: x & y, [df_filter[metric.value] == row[metric.value] for metric in metrics_check])
                     if len(df_filter[condition]) < 2:
                         df_filter.loc[index, self.metrics_hide[i]] = np.nan
                         is_nan = True
-        self.df_standings = df_filter
+        self.df_standings = df_filter.dropna(subset=["rank"])
 
     def load_presentation(self, path):
         # Reset

@@ -191,7 +191,7 @@ class SpeakerSlidesBuilder():
                     df_filter.loc[index, self.metrics_hide[i]] = np.nan
                 else:
                     metrics_check = [*self.metrics_show, *self.metrics_hide[:i]]
-                    condition = functools.reduce(lambda x, y: x & y, [df_filter[metric] == row[metric] for metric in metrics_check])
+                    condition = functools.reduce(lambda x, y: x & y, [df_filter[metric.value] == row[metric.value] for metric in metrics_check])
                     if len(df_filter[condition]) < 2:
                         df_filter.loc[index, self.metrics_hide[i]] = np.nan
                         is_nan = True
