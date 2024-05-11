@@ -31,13 +31,14 @@ class TeamSlidesBuilder():
         }
         self.txt_title = ["{} Breaking Team", "{} Reserved Breaking Team"]
         self.danger_prevention = BlankSlideSettings.CHANGE_RANK
+        self.col_rank = None
         try:
             self.load_logos("./institution_logo.csv")
             self.paths["logo"] = "./institution_logo.csv"
         except Exception as e:
             print(e)
 
-    def main_menu(self):
+    def main_choices(self):
         txt_participant = f"Participant: {self.paths['participant']}" if self.paths["participant"] else "Participant: NOT LOADED"
         txt_logo = f"Logo: {self.paths['logo']}" if self.paths["logo"] else "Logo: NOT LOADED"
         txt_standing = f"Standing: {self.paths['standing']} | {'->'.join([m.value for m in self.metrics_show])}" if self.paths["standing"] else "Standing: NOT LOADED"
@@ -46,7 +47,7 @@ class TeamSlidesBuilder():
         txt_display_metrics = f"Metrics display"
         if len(self.metrics_hide):
             txt_standing += f"(->{'->'.join([m.value for m in self.metrics_hide])})"
-        choices = [
+        return [
             (txt_participant, "participant"),
             (txt_logo, "logo"),
             (txt_standing, "standing"),
@@ -57,26 +58,25 @@ class TeamSlidesBuilder():
             ("Create slide", "create"),
             ("Quit", "quit")
         ]
-        selected = inquirer.list_input("Configure", choices=choices)
-        if selected == "participant":
-            self.prompt_path_participant()
-        elif selected == "logo":
-            self.prompt_path_logo()
-        elif selected == "standing":
-            self.prompt_path_standing()
-        elif selected == "presentation":
-            self.prompt_path_presentation()
-        elif selected == "title":
-            self.prompt_title()
-        elif selected == "display":
-            self.prompt_metric_display()
-        elif selected == "danger":
-            self.prompt_danger_prevention()
-        elif selected == "create":
-            self.create_slides()
-        
-        if selected != "quit":
-            self.main_menu()
+
+    def main_menu(self):
+        while (selected := inquirer.list_input("Configure teams", choices=self.main_choices())) != "quit":
+            if selected == "participant":
+                self.prompt_path_participant()
+            elif selected == "logo":
+                self.prompt_path_logo()
+            elif selected == "standing":
+                self.prompt_path_standing()
+            elif selected == "presentation":
+                self.prompt_path_presentation()
+            elif selected == "title":
+                self.prompt_title()
+            elif selected == "display":
+                self.prompt_metric_display()
+            elif selected == "danger":
+                self.prompt_danger_prevention()
+            elif selected == "create":
+                self.create_slides()
     
     def prompt_path_logo(self):
         file_path = filedialog.askopenfilename(filetypes=[("csv file", "*.csv")], title="Select institution-logo file")
@@ -104,11 +104,34 @@ class TeamSlidesBuilder():
         file_path = filedialog.askopenfilename(filetypes=[("csv file", "*.csv")], title="Select team standing file")
         if len(file_path) and Path(file_path).exists():
             try:
-                self.load_standings(file_path)
+                self.metrics_show = []
+                self.metrics_hide = []
+                df_load = pd.read_csv(file_path, encoding=enc)
+                if "team" not in df_load.columns:
+                    raise MissingColumnError("Missing Column 'team'")
+                columns_metric = [TeamMetric(e) for e in TeamMetric.values() if e in df_load.columns]
+                # Selecting ranks
+                self.col_rank = inquirer.list_input("Which column holds the rank?", choices = [c for c in df_load.columns if c not in [e.value for e in columns_metric]])
+                # Selecting show metrics
+                while len(metrics_remaining := list(set(columns_metric) - set(self.metrics_hide) - set(self.metrics_show))):
+                    choices = [(f"{m.value} ({description_team_metric[TeamMetric(m)]})", TeamMetric(m)) for m in metrics_remaining] + [("(Next)", None)]
+                    selected = inquirer.list_input(f"Select all metrics to always show: {' -> '.join([m.value for m in self.metrics_show])}", choices = choices)
+                    if selected:
+                        self.metrics_show.append(selected)
+                    else:
+                        break
+                # Selecting hide metrics
+                while len(metrics_remaining := list(set(columns_metric) - set(self.metrics_hide) - set(self.metrics_show))):
+                    choices = [(f"{m.value} ({description_team_metric[TeamMetric(m)]})", TeamMetric(m)) for m in metrics_remaining] + [("(Next)", None)]
+                    selected = inquirer.list_input(f"Select all metrics to show only when necessary: {' -> '.join([m.value for m in self.metrics_hide])}", choices = choices)
+                    if selected:
+                        self.metrics_hide.append(selected)
+                    else:
+                        break
                 self.paths["standing"] = file_path
+                self.load_standings()
             except Exception as e:
                 logging.exception("Error at prompt standing")
-                print(e)
         else:
             print("Error: file does not exist.")
     
@@ -159,33 +182,10 @@ class TeamSlidesBuilder():
         if len(missing_columns) != 0:
             raise MissingColumnError(f"Missing column(s) for {path}: {', '.join(missing_columns)}")
 
-    def load_standings(self, path):
-        self.metrics_show = []
-        self.metrics_hide = []
-        df_load = pd.read_csv(path, encoding=enc)
-        if "team" not in df_load.columns:
-            raise MissingColumnError("Missing Column 'team'")
-        columns_metric = [TeamMetric(e) for e in TeamMetric.values() if e in df_load.columns]
-        # Selecting ranks
-        col_rank = inquirer.list_input("Which column holds the rank?", choices = [c for c in df_load.columns if c not in [e.value for e in columns_metric]])
-        # Selecting show metrics
-        while len(metrics_remaining := list(set(columns_metric) - set(self.metrics_hide) - set(self.metrics_show))):
-            choices = [(f"{m.value} ({description_team_metric[TeamMetric(m)]})", TeamMetric(m)) for m in metrics_remaining] + [("(Next)", None)]
-            selected = inquirer.list_input(f"Select all metrics to always show: {' -> '.join([m.value for m in self.metrics_show])}", choices = choices)
-            if selected:
-                self.metrics_show.append(selected)
-            else:
-                break
-        # Selecting hide metrics
-        while len(metrics_remaining := list(set(columns_metric) - set(self.metrics_hide) - set(self.metrics_show))):
-            choices = [(f"{m.value} ({description_team_metric[TeamMetric(m)]})", TeamMetric(m)) for m in metrics_remaining] + [("(Next)", None)]
-            selected = inquirer.list_input(f"Select all metrics to show only when necessary: {' -> '.join([m.value for m in self.metrics_hide])}", choices = choices)
-            if selected:
-                self.metrics_hide.append(selected)
-            else:
-                break
-        columns_extract = ["team", col_rank, *[m.value for m in self.metrics_show], *[m.value for m in self.metrics_hide]]
-        df_filter = df_load[columns_extract].rename(columns={col_rank: "rank"}).dropna(subset=["rank"]).sort_values(by=["rank", "team"], ascending=[False, True])
+    def load_standings(self):
+        df_load = pd.read_csv(self.paths["standing"], encoding=enc)
+        columns_extract = ["team", self.col_rank, *[m.value for m in self.metrics_show], *[m.value for m in self.metrics_hide]]
+        df_filter = df_load[columns_extract].rename(columns={self.col_rank: "rank"})
         # Remove unnecessary metrics
         for index, row in df_filter.iterrows():
             is_nan = False
@@ -198,7 +198,7 @@ class TeamSlidesBuilder():
                     if len(df_filter[condition]) < 2:
                         df_filter.loc[index, self.metrics_hide[i]] = np.nan
                         is_nan = True
-        self.df_standings = df_filter.dropna(subset=["rank"])
+        self.df_standings = df_filter.dropna(subset=["rank"]).sort_values(by=["rank", "team"], ascending=[False, True])
 
     def load_presentation(self, path):
         # Reset

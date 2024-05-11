@@ -135,5 +135,5 @@ def get_institution_logo(dict_path: dict, institutions: list):
     try:
         paths = [str(dict_path[institution]) for institution in institutions]
     except Exception as e:
-        raise Exception("failed to retreive institution")
+        raise Exception(f"failed to retreive institution: {e}")
     return paths

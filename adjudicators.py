@@ -24,20 +24,21 @@ class AdjudicatorSlidesBuilder():
         self.display = "avg. {} points"
         self.txt_title = "{} Best Adjudicator"
         self.danger_prevention = BlankSlideSettings.CHANGE_RANK
+        self.col_rank = None
         try:
             self.load_logos("./institution_logo.csv")
             self.paths["logo"] = "./institution_logo.csv"
         except Exception as e:
             print(e)
 
-    def main_menu(self):
+    def main_choices(self):
         txt_participant = f"Participant: {self.paths['participant']}" if self.paths["participant"] else "Participant: NOT LOADED"
         txt_logo = f"Logo: {self.paths['logo']}" if self.paths["logo"] else "Logo: NOT LOADED"
         txt_standing = f"Standing: {self.paths['standing']}" if self.paths["standing"] else "Standing: NOT LOADED"
         txt_presentation = f"Presentation: {self.paths['presentation']}" if self.paths["presentation"] else "Presentation: NOT LOADED"
         txt_title = f"Title: \"{self.txt_title.format('(nth)')}\""
         txt_display = f"Point display: \"{self.display}\""
-        choices = [
+        return [
             (txt_participant, "participant"),
             (txt_logo, "logo"),
             (txt_standing, "standing"),
@@ -48,26 +49,26 @@ class AdjudicatorSlidesBuilder():
             ("Create slide", "create"),
             ("Quit", "quit")
         ]
-        selected = inquirer.list_input("Configure", choices=choices)
-        if selected == "participant":
-            self.prompt_path_participant()
-        elif selected == "logo":
-            self.prompt_path_logo()
-        elif selected == "standing":
-            self.prompt_path_standing()
-        elif selected == "presentation":
-            self.prompt_path_presentation()
-        elif selected == "title":
-            self.prompt_title()
-        elif selected == "display":
-            self.prompt_metric_display()
-        elif selected == "danger":
-            self.prompt_danger_prevention()
-        elif selected == "create":
-            self.create_slides()
+
+    def main_menu(self):
         
-        if selected != "quit":
-            self.main_menu()
+        while (selected := inquirer.list_input("Configure", choices=self.main_choices())) != "quit":
+            if selected == "participant":
+                self.prompt_path_participant()
+            elif selected == "logo":
+                self.prompt_path_logo()
+            elif selected == "standing":
+                self.prompt_path_standing()
+            elif selected == "presentation":
+                self.prompt_path_presentation()
+            elif selected == "title":
+                self.prompt_title()
+            elif selected == "display":
+                self.prompt_metric_display()
+            elif selected == "danger":
+                self.prompt_danger_prevention()
+            elif selected == "create":
+                self.create_slides()
     
     def prompt_path_logo(self):
         file_path = filedialog.askopenfilename(filetypes=[("csv file", "*.csv")], title="Select institution-logo file")
@@ -95,8 +96,14 @@ class AdjudicatorSlidesBuilder():
         file_path = filedialog.askopenfilename(filetypes=[("csv file", "*.csv")], title="Select adjudicator standing file")
         if len(file_path) and Path(file_path).exists():
             try:
-                self.load_standings(file_path)
+                df_load = pd.read_csv(file_path, encoding = enc)
+                missing_columns = [item for item in ["name", "score"] if item not in df_load]
+                if len(missing_columns) != 0:
+                    raise MissingColumnError(f"Missing column(s) for {file_path}: {', '.join(missing_columns)}")
+                # Selecting ranks
+                self.col_rank = inquirer.list_input("Which column holds the rank?", choices = [c for c in df_load.columns if c not in ["name", "score"]])
                 self.paths["standing"] = file_path
+                self.load_standings()
             except Exception as e:
                 logging.exception("What?")
         else:
@@ -140,16 +147,10 @@ class AdjudicatorSlidesBuilder():
         if len(missing_columns) != 0:
             raise MissingColumnError(f"Missing column(s) for {path}: {', '.join(missing_columns)}")
 
-    def load_standings(self, path):
-        df_load = pd.read_csv(path, encoding = enc)
-        print(df_load.columns)
-        missing_columns = [item for item in ["name", "score"] if item not in df_load]
-        if len(missing_columns) != 0:
-            raise MissingColumnError(f"Missing column(s) for {path}: {', '.join(missing_columns)}")
-        # Selecting ranks
-        col_rank = inquirer.list_input("Which column holds the rank?", choices = [c for c in df_load.columns if c not in ["name", "score"]])
+    def load_standings(self):
+        df_load = pd.read_csv(self.paths["standing"], encoding = enc)
         # Selecting show metrics
-        df_filter = df_load[["name", "score", col_rank]].rename(columns={col_rank: "rank"}).dropna(subset=["rank"]).sort_values(by=["rank", "name"], ascending=[False, True])
+        df_filter = df_load[["name", "score", self.col_rank]].rename(columns={self.col_rank: "rank"}).dropna(subset=["rank"]).sort_values(by=["rank", "name"], ascending=[False, True])
         self.df_standings = df_filter
 
     def load_presentation(self, path):

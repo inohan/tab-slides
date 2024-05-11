@@ -51,7 +51,7 @@ def create_slides_teams(pres, dict_slides: dict, df_standings: pd.DataFrame, df_
     for index, row in df_standings.iterrows():
         paths_institution = get_institution_logo(dict_logo, get_institution_team(df_teams, row["team"]))
         # Set title
-        str_title = title_text[0 if row["rank"] > 0 else 1].format(ordinal(abs(int(row["rank"]))))
+        str_title = title_text[0 if row["rank"] > 0 else 1].format(ordinal(abs(int(row["rank"])))).replace("1st Best", "Best")
         if row["rank"] == prev_rank:
             subrank += 1
         else:
@@ -75,7 +75,7 @@ def create_slides_debaters(pres, dict_slides: dict, df_standings: pd.DataFrame, 
     for index, row in df_standings.iterrows():
         paths_institution = get_institution_logo(dict_logo, get_institution_debater(df_teams, row["name"]))
         # Set title
-        str_title = title_text.format(ordinal(abs(int(row["rank"]))))
+        str_title = title_text.format(ordinal(abs(int(row["rank"])))).replace("1st Best", "Best")
         if row["rank"] == prev_rank:
             subrank += 1
         else:
@@ -98,7 +98,7 @@ def create_slides_adjudicators(pres, dict_slides: dict, df_standings: pd.DataFra
     for index, row in df_standings.iterrows():
         paths_institution = get_institution_logo(dict_logo, get_institution_adjudicator(df_adjs, row["name"]))
         # Set title
-        str_title = title_text.format(ordinal(abs(int(row["rank"]))))
+        str_title = title_text.format(ordinal(abs(int(row["rank"])))).replace("1st Best", "Best")
         if row["rank"] == prev_rank:
             subrank += 1
         else:
